@@ -1,0 +1,120 @@
+suppressPackageStartupMessages(library(DESeq2))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(optparse))
+
+option_list <- list(
+  optparse::make_option(
+    c("-i", "--counts"), type="character", default=NULL,
+    help="path to counts table (rows: sgRNAs, columns: Samples)", metavar="character"
+  ),
+  optparse::make_option(
+    c("-s", "--samplesheet"), type="character", default=NULL,
+    help="path to sample sheet (columns: Index, Treat, Rep)", metavar="character"
+  ),
+  optparse::make_option(
+    c("-t", "--treatment"), type="character", default=NULL,
+    help="name of samples in treatment condition", metavar="character"
+  ),
+  optparse::make_option(
+    c("-c", "--control"), type="character", default=NULL,
+    help="name of samples in control condition", metavar="character"
+  ),
+  optparse::make_option(
+    c("-z", "--T0"), type="character", default=FALSE,
+    help="name of samples in T0 condition", metavar="character"
+  ),
+  optparse::make_option(
+    c("-o", "--out"), type="character", default="out",
+    help="output file path [default= %default]", metavar="character")
+);
+
+runDeseq <- function(countsTable, samplesheet) {
+  colData <- read.table(
+    samplesheet, check.names=FALSE, sep=',', header=1
+  ) %>% column_to_rownames('Index')
+
+  colData$Treat <- as.factor(colData$Treat) %>% relevel(ref = 'T0')
+
+  ### Create DESeq Object
+  dds <- DESeqDataSetFromMatrix(
+      countData = countsTable,
+      colData = colData,
+      design = ~ 0 + Treat
+  )
+
+  ### Normalize counts
+  dds <- estimateSizeFactors(dds)
+  dds <- estimateDispersions(dds)
+
+  ## Run DESeq tests
+  dds <- DESeq2::DESeq(dds, test="LRT", reduced = ~ 1)
+
+  ## print DESeq tests result names
+  message(DESeq2::resultsNames(dds))
+
+  return(dds)
+}
+
+writeResult <- function(res,resName){
+  write.table(res, resName, sep="\t", quote=FALSE, col=TRUE, row=TRUE)
+}
+
+getResult <- function(
+  dds, numerator, denominator, sgRNA2gene,
+  cond='Treat', write=FALSE,outDir=NULL,name=NULL
+){
+  res <- DESeq2::results(
+    dds,
+    contrast=list(paste0(cond,numerator),paste0(cond,denominator)),
+    listValues=c(1, -1)
+  )
+
+  res <- cbind(sgRNA2gene, res %>% data.frame)
+
+  if(write) {
+    writeResult(
+      res, paste0(outDir, '/', name, 'R', numerator, '_vs_', denominator, '.txt')
+    )
+  } else {
+    return(res)
+  }
+}
+
+getPheScores <- function(dds, Treatment, Control, sgRNA2gene, T0, out){
+  ## rho  – treatment vs ctrl
+  getResult(dds, Treatment, Control, sgRNA2gene,
+            write=TRUE, outDir = out, name='rho')
+
+  ## gamma  – ctrl vs T0
+  if (T0){
+    getResult(dds, Control, T0, sgRNA2gene,
+              write=TRUE, outDir = out, name='gamma')
+  }
+
+  ## tau  – treatment vs T0
+  if (T0){
+    getResult(dds, Treatment, T0, sgRNA2gene,
+              write=TRUE, outDir = out, name='tau')
+  }
+
+  ## kappa  – combination treatment vs. single treatment
+  # not implemented
+}
+
+
+message('Start!')
+opt_parser <- OptionParser(option_list=option_list);
+opt <- parse_args(opt_parser);
+
+message('Load sgRNA count table!')
+countsTable <- read.table(opt$counts, check.names=FALSE)
+sgRNA2gene <- countsTable[, 1:3]
+countsTable <- countsTable[, 4:dim(countsTable)[2]]
+
+message('Run test!')
+dds <- runDeseq(countsTable, opt$samplesheet)
+
+message('Extract results!')
+getPheScores(dds, opt$treatment, opt$control, sgRNA2gene,  opt$T0, opt$out)
+
+message('DONE!')

@@ -1,8 +1,8 @@
 # CRISPRi-dual-sgRNA-screens
+## 1. sgRNA counts 
+This part contains scripts for alignment of sequencing data from dual-sgRNA CRISPR screening data. These scripts were adapted from: https://github.com/mhorlbeck/ScreenProcessing
 
-This repository contains scripts for alignment of sequencing data from dual-sgRNA CRISPR screening data. These scripts were adapted from: https://github.com/mhorlbeck/ScreenProcessing
-
-For alignment of data without UMI, use python dualguide_fastqgz_to_counts.py. Example command:
+For alignment of data without UMI, use python `dualguide_fastqgz_to_counts.py`. Example command:
 
 ```bash
 python dualguide_fastqgz_to_counts.py 20200513_library_1_2_unbalanced.csv  alignments fastq/UDP0007* fastq/UDP0006*
@@ -19,7 +19,33 @@ python dualguide_UMI_fastqgz_to_counts.py 20200513_library_1_2_unbalanced.csv \
   alignments \
   JR72_S1_L001* JR72_S1_L002* JR72_S1_L003* JR72_S1_L004*
 ```
-This will output a file of counts for each sgRNA-UMI combination. From this, we can then calculate the enrichment of each guide between screen arms in python or MaGECK.
 
+## 2. Merge counts for multiple samples  
+This part will merge outputs into a table in which rows are each sgRNA-UMI combination and columns are sample names. 
 
+[//]: # (From this, we can then calculate the enrichment of each guide between screen arms in python or MaGECK.)
+```bash
+# to-do
+```
 
+## 3. Calculate the enrichment of each guide between screen arms
+Sample sheet example: 
+```
+Index,Treat,Rep
+i05,T0,2
+i06,T0,1
+i07,DMSO,1
+i08,DMSO,2
+i09,DMSO,3
+i10,RM6,1
+i11,RM6,2
+i12,RM6,3 
+```
+
+Command line script example: 
+```bash
+Rscript PhenotypeScores.R \
+-i demo/counts.txt -s demo/samplesheet.txt \
+-t RM6 -c DMSO \
+-o demo
+```
