@@ -35,6 +35,8 @@ def makeABCountMatrix(countFiles):
 
     counts = counts.fillna(0)
 
+    counts.insert(0, 'target', counts.index.str.split('_').str[0])
+
     return counts
 
 
