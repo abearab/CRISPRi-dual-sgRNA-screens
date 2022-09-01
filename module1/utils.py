@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 def getMismatchDict(table, column, trim_range=None, allowOneMismatch=True):
     mismatch_dict = dict()
 
@@ -48,30 +45,3 @@ def matchBarcode(mismatch_dict, barcode, allowOneMismatch=True):
         match = 'none'
 
     return match
-
-
-def readCounts(file):
-    df = pd.read_csv(file, sep='\t', header=None)
-    df.rename(columns={0: 'sgID_AB', 1: 'count'}, inplace=True)
-    df.set_index('sgID_AB', inplace=True)
-
-    return df
-
-
-def makeCountMatrix(files, samples):
-    IDs = []
-    for file in files:
-        for sgID_AB in readCounts(file).index.tolist():
-            IDs.append(sgID_AB)
-    IDs = set(IDs)
-
-    counts = pd.DataFrame(index=IDs, columns=samples)
-
-    for sample, file in zip(samples, files):
-        counts.loc[
-            readCounts(file).id.tolist(), sample
-        ] = readCounts(file).count.tolist()
-
-    counts = counts.fillna(0)
-
-    return counts
