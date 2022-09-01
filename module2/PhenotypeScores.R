@@ -31,20 +31,20 @@ option_list <- list(
 runDeseq <- function(countsTable, samplesheet) {
   colData <- read.table(
     samplesheet, check.names=FALSE, sep=',', header=1
-  ) %>% column_to_rownames('Index')
+  ) %>% tibble::column_to_rownames('Index')
 
   colData$Treat <- as.factor(colData$Treat) %>% relevel(ref = 'T0')
 
   ### Create DESeq Object
-  dds <- DESeqDataSetFromMatrix(
+  dds <- DESeq2::DESeqDataSetFromMatrix(
       countData = countsTable,
       colData = colData,
       design = ~ 0 + Treat
   )
 
   ### Normalize counts
-  dds <- estimateSizeFactors(dds)
-  dds <- estimateDispersions(dds)
+  dds <- DESeq2::estimateSizeFactors(dds)
+  dds <- DESeq2::estimateDispersions(dds)
 
   ## Run DESeq tests
   dds <- DESeq2::DESeq(dds, test="LRT", reduced = ~ 1)
@@ -116,5 +116,12 @@ dds <- runDeseq(countsTable, opt$samplesheet)
 
 message('Extract results!')
 getPheScores(dds, opt$treatment, opt$control, sgRNA2gene,  opt$T0, opt$out)
+
+message('Extract Normalized counts!')
+normalized_counts <- DESeq2::counts(dds, normalized=TRUE)
+writeResult(
+  normalized_counts,
+  gsub('.txt',"_DESeq2_normalized.txt", opt$counts)
+)
 
 message('DONE!')
