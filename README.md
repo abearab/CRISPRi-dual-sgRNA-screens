@@ -1,5 +1,5 @@
 # CRISPRi-dual-sgRNA-screens
-## 1. sgRNA counts 
+## sgRNA counts 
 This part contains scripts for alignment of sequencing data from dual-sgRNA CRISPR screening data. These scripts were adapted from: https://github.com/mhorlbeck/ScreenProcessing
 
 For alignment of data without UMI, use python `dualguide_fastqgz_to_counts.py`. Example command:
@@ -23,12 +23,12 @@ python module1/dualguide_UMI_fastqgz_to_counts.py 20200513_library_1_2_unbalance
   JR72_S1_L001* JR72_S1_L002* JR72_S1_L003* JR72_S1_L004*
 ```
 
-## 2. Merge counts for multiple samples  
+## Merge counts for multiple samples  
 This part will merge outputs into a table in which rows are each sgRNA-UMI combination and columns are sample names. 
 
 [//]: # (From this, we can then calculate the enrichment of each guide between screen arms in python or MaGECK.)
 ```bash
-python module2/count_files_to_counts_matrix.py alignments results
+python module1/count_files_to_counts_matrix.py alignments results
 ```
 ### Output 
 Raw counts matrix (`counts.txt`) 
@@ -37,7 +37,7 @@ columns: sample IDs
 rows: sgID_AB counts
 ```
 
-## 3. Calculate the enrichment of each guide between screen arms
+## Calculate the enrichment of each guide between screen arms
 Sample sheet example: 
 ```
 Index,Treat,Rep
@@ -72,3 +72,4 @@ rows: sgID_AB counts (DESeq2 normalized)
     target  baseMean        log2FoldChange  lfcSE   stat    pvalue  padj
 MAP1LC3B_-_87425948.23-P1P2|MAP1LC3B_-_87425925.23-P1P2++MAP1LC3B_-_87425948.23-P1P2|MAP1LC3B_-_87425925.23-P1P2        MAP1LC3B       598.454899564438        0.0345856896391499      0.14241765524649        0.502626099621637       0.777778849921918     0.88940640596369
 ```
+
