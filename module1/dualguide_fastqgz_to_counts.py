@@ -34,7 +34,8 @@ def writeToCounts(fileTup):
                 if i % 4 == 1:
 
                     ##trimming is adjusted based on sequencing strategy
-                    protospacer_a_r1 = matchBarcode(mismatchDicts['protospacer_a_r1'], r1[1:20].strip().decode("utf-8"),
+                    # protospacer_a_r1 = matchBarcode(mismatchDicts['protospacer_a_r1'], r1[1:20].strip().decode("utf-8"),
+                    protospacer_a_r1 = matchBarcode(mismatchDicts['protospacer_a_r1'], r1[:19].strip().decode("utf-8"),
                                                     allowOneMismatch=False)
 
                     protospacer_b_r2 = matchBarcode(mismatchDicts['protospacer_b_r2'], r2[:19].strip().decode("utf-8"),
