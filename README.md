@@ -1,4 +1,7 @@
 # CRISPRi-dual-sgRNA-screens
+
+[This is an archived repository, you may use ScreenPro2 instead] https://github.com/ArcInstitute/ScreenPro2
+
 ## Fastq to counts
 This repository contains scripts for alignment of sequencing data from dual-sgRNA CRISPR screening data. These scripts were adapted from: https://github.com/mhorlbeck/ScreenProcessing
 
